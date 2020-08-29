@@ -1,32 +1,6 @@
-interchange-file-format
-=======================
-
-> A module for working with Interchange File Format (IFF) data.
-
-## Status
-
-> **WIP**
-
-## Installation
-
-```sh
-$ npm install interchange-file-format
-```
-
-## Usage
-
-```js
-// TODO
-```
-
-## Example
-
-The following example implements a few structures for the [AIFF (Audio
-Interchange File
-Format)](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/AIFF/Docs/AIFF-1.3.pdf)
-
-```js
-const { Form, Chunk } = require('interchange-file-format')
+const { Chunk } = require('../chunk')
+const { Form } = require('../form')
+const fs = require('fs')
 
 Form.extensions.set('COMM', class CommonChunk extends Chunk {
   get numChannels() {
@@ -66,28 +40,17 @@ Form.extensions.set('SSND', class SoundDataChunk extends Chunk {
   }
 })
 
-const buffer = fs.readFileSync('/path/to/audio/track.aif')
+const buf = fs.readFileSync('/home/werle/Documents/OP-1/AIF/8-22-20-92bpm/tape/track_1.aif')
 const form = Form.from(buf)
-console.log(form.type.toString()); // AIFC
+console.log(form.type.toString());
 
 for (const chunk of form) {
-  if ('COMM' ===  chunk.id.toString()) {
-    // chunk is an instance of `CommonChunk`
+  console.log(chunk.id.toString());
+  if (chunk.sampleRate) {
     console.log(chunk.numChannels, chunk.numSampleFrames, chunk.sampleSize, chunk.sampleRate);
   }
-}
 
-  if ('SSND' === chunk.id.toString()) {
-    // chunk is an instance of `SoundDataChunk`
+  if (chunk.soundData) {
     console.log(chunk.offset, chunk.blockSize, chunk.soundData);
   }
 }
-```
-
-## API
-
-> TODO
-
-## License
-
-MIT

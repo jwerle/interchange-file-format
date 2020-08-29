@@ -1,0 +1,27 @@
+{
+  "name": "interchange-file-format",
+  "version": "0.0.0",
+  "description": "Interchange File Format (IFF) codec.",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc tape test/*.js"
+  },
+  "keywords": [
+    "interchange",
+    "file",
+    "format",
+    "iff",
+    "aiff",
+    "aif"
+  ],
+  "author": "Joseph Werle <joseph.werle@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "nyc": "^15.1.0",
+    "tape": "^5.0.1"
+  },
+  "dependencies": {
+    "nanoassert": "^2.0.0",
+    "varint": "^5.0.0"
+  }
+}
