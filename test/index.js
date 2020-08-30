@@ -1,0 +1,16 @@
+const test = require('tape')
+const iff = require('../')
+
+test('index', (t) => {
+  t.ok(iff)
+  t.ok('function' === typeof iff.CAT)
+  t.ok('function' === typeof iff.Chunk)
+  t.ok('function' === typeof iff.ChunkIterator)
+  t.ok(iff.extensions instanceof Map)
+  t.ok('function' === typeof iff.Form)
+  t.ok('function' === typeof iff.Group)
+  t.ok('function' === typeof iff.ID)
+  t.ok('function' === typeof iff.List)
+  t.ok('function' === typeof iff.Prop)
+  t.end()
+})
