@@ -3,7 +3,7 @@ const { Chunk, ChunkIterator } = require('./chunk')
 const { Form } = require('./form')
 const { Group } = require('./group')
 const { ID } = require('./id')
-const { List } = require('./List')
+const { List } = require('./list')
 const { Prop } = require('./Prop')
 
 module.exports = {
