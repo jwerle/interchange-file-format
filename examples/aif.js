@@ -40,17 +40,24 @@ Form.extensions.set('SSND', class SoundDataChunk extends Chunk {
   }
 })
 
-const buf = fs.readFileSync('/home/werle/Documents/OP-1/AIF/8-22-20-92bpm/tape/track_1.aif')
+if (!process.argv[2]) {
+  // | sox -V -t raw -b 16 -e signed -c 1 -r 44.1k - -t wav -r 16k - | mpv -
+  console.error('usage: node %s <filename>', process.argv[1])
+  console.error('example:\n  # node %s ./track.aif | sox -V -t raw -b 16 -e signed -c 1 -r 44.1k - -t wav -r 16k - | mpv -', process.argv[1])
+  process.exit(2)
+}
+const buf = fs.readFileSync(process.argv[2])
 const form = Form.from(buf)
-console.log(form.type.toString());
+console.error(form.type.toString());
 
 for (const chunk of form) {
-  console.log(chunk.id.toString());
+  console.error(chunk.id.toString());
+  process.stdout.write(chunk)
   if (chunk.sampleRate) {
-    console.log(chunk.numChannels, chunk.numSampleFrames, chunk.sampleSize, chunk.sampleRate);
+    console.error(chunk.numChannels, chunk.numSampleFrames, chunk.sampleSize, chunk.sampleRate);
   }
 
   if (chunk.soundData) {
-    console.log(chunk.offset, chunk.blockSize, chunk.soundData);
+    console.error(chunk.offset, chunk.blockSize, chunk.soundData);
   }
 }
