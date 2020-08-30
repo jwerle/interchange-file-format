@@ -9,6 +9,19 @@ const assert = require('nanoassert')
 class Chunk extends Uint8Array {
 
   /**
+   * Return the header of a `Chunks` buffer.
+   * @static
+   * @param {Buffer|Chunk} buffer
+   * @return {Object}
+   */
+  static header(buffer) {
+    // istanbul ignore next
+    const size = buffer.length >= 8 ? buffer.readUInt32BE(4) : 0
+    const id = ID.from(buffer.slice(0, 4))
+    return { id, size }
+  }
+
+  /**
    * Create a new `Chunk` from a given `buffer` with options.
    * @static
    * @param {Buffer} buffer
@@ -29,7 +42,8 @@ class Chunk extends Uint8Array {
     buffer = Buffer.from(buffer)
 
     const { ancestor } = opts
-    const size = opts.size || buffer.readUIntBE(4, 4)
+    // istanbul ignore next
+    const size = opts.size || (buffer.length >= 8 ? buffer.readUInt32BE(4) : buffer.length) || buffer.length
     const id = ID.from(buffer.slice(0, 4))
 
     const chunk = new this(id, { size: size, ancestor })

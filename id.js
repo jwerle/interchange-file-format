@@ -7,6 +7,8 @@ const varint = require('varint')
  */
 const BYTES = 4
 
+const zeroes = Buffer.alloc(BYTES)
+
 function set(target, bytes) {
   return Buffer.prototype.set.call(target, Buffer.from(bytes))
 }
@@ -37,6 +39,16 @@ class ID extends Uint8Array {
    */
   static from(id) {
     return new this(id)
+  }
+
+  /**
+   * Returns an empty `ID` instance.
+   * @static
+   * @accessor
+   * @type {ID}
+   */
+  static get EMPTY() {
+    return this.from(zeroes)
   }
 
   /**
@@ -130,6 +142,15 @@ class ID extends Uint8Array {
     super(BYTES)
 
     this.set(id)
+  }
+
+  /**
+   * `true` if the state of the ID
+   * @accessor
+   * @type {Boolean
+   */
+  get isValid() {
+    return 0 !== Buffer.compare(this.toBuffer(), ID.EMPTY)
   }
 
   /**

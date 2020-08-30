@@ -1,4 +1,5 @@
 const { Chunk, ChunkIterator } = require('./chunk')
+const { Readable, Writable } = require('streamx')
 const { ID } = require('./id')
 const assert = require('nanoassert')
 
@@ -61,6 +62,141 @@ function coerce(chunk) {
   }
 
   return chunk
+}
+
+/**
+ * Implements a `ReadStream` for `Group` types.
+ * @class ReadStream
+ * @extends streamx.Readable
+ */
+class ReadStream extends Readable {
+
+  /**
+   * Create a `ReadStream` from a `Group` instance.
+   * @static
+   * @return {WriteStream}
+   */
+  // istanbul ignore next
+  static from(group) {
+    return new this(group)
+  }
+
+  /**
+   * `ReadStream` class constructor.
+   * @param {Group} group
+   */
+  constructor(group) {
+    super()
+    this.group = group
+    this.header = null
+    this.iterator = group.iterator()
+  }
+
+  /**
+   * Implements `_reaad()` for `Readable` stream.
+   * @protected
+   */
+  _read(callback) {
+    // send header first
+    if (!this.header) {
+      this.header = this.group.header
+      this.push(this.header)
+      callback(null)
+      return
+    }
+
+    const { value, done } = this.iterator.next()
+
+    if (done) {
+      this.push(null)
+    } else {
+      // istanbul ignore next
+      if (value && 'function' === typeof value.toBuffer) {
+        this.push(value.toBuffer())
+      } else {
+        // istanbul ignore next
+        this.push(value)
+      }
+    }
+
+    callback(null)
+  }
+}
+
+/**
+ * Implements a `WriteStream` for `Group` types.
+ * @class WriteStream
+ * @extends streamx.Writable
+ */
+class WriteStream extends Writable {
+
+  /**
+   * Create a `WriteStream` from a `Group` instance.
+   * @static
+   * @return {WriteStream}
+   */
+  // istanbul ignore next
+  static from(group) {
+    return new this(group)
+  }
+
+  /**
+   * `WriteStream` class constructor.
+   * @param {Group} group
+   */
+  constructor(group) {
+    super()
+    this.cache = null
+    this.group = group
+    this.stream = null
+    this.offset = 0
+    this.header = null
+  }
+
+  /**
+   * Implements `_write()` for `Writable` stream.
+   * @protected
+   */
+  _write(buffer, callback) {
+    if (!this.header) {
+      // get group type from buffer if available
+      const { type } = Group.from(buffer)
+
+      // istanbul ignore next
+      if (type.isValid) {
+        this.group.type = type
+      }
+
+      this.header = Chunk.header(buffer)
+      this.offset = buffer.length
+      this.cache = Buffer.alloc(this.header.size + 8)
+
+      // initial group configuration from first frame
+      this.cache.set(buffer)
+    } else {
+      const offset = Math.min(this.header.size - this.offset, buffer.length)
+      this.cache.set(buffer, this.offset)
+      this.offset += offset
+
+      // flush at the end
+      if (this.header && this.offset >= this.header.size) {
+        this.group.clear()
+        this.group.push(...Group.from(this.cache))
+        this.cache = null
+      }
+    }
+
+    process.nextTick(callback)
+  }
+
+  /**
+   * Implements `_write()` for `Writable` stream.
+   * @protected
+   */
+  _destroy(callback) {
+    this.cache = null
+    process.nextTick(callback)
+  }
 }
 
 /**
@@ -133,7 +269,7 @@ class Group extends Array {
       [kIsGroup]: { value: true , enumerable: false, writable: false },
       onlyGroups: { value: false, enumerable: false, writable: true },
       ancestor: { value: null, enumerable: false, writable: true },
-      type: { value: type, enumerable: false },
+      type: { value: type, writable: true, enumerable: false },
       id: { value: id, enumerable: false },
     })
   }
@@ -149,6 +285,29 @@ class Group extends Array {
       chunks.push(chunk.toBuffer())
     }
     return Buffer.concat(chunks)
+  }
+
+  /**
+   * Returns the computed size of this `Group`.
+   * @accessor
+   * @type {Number}
+   */
+  get size() {
+    return this.reduce((total, chunk) => total + chunk.size, 0)
+  }
+
+  /**
+   * Returns the header portion of this `Group` as a `Buffer`.
+   * @accessor
+   * @type {Buffer}
+   */
+  get header() {
+    const { chunks } = this
+    const type = this.type.toBuffer()
+    const size = Buffer.alloc(4)
+    const id = this.id.toBuffer()
+    size.writeUIntBE(type.length + chunks.length, 0 , 4)
+    return Buffer.concat([ id, size, type ])
   }
 
   /**
@@ -286,6 +445,32 @@ class Group extends Array {
   }
 
   /**
+   * Splice items from the group, returning a new `Group` instance
+   * with them in it.
+   * @return {Group}
+   */
+  splice(...args) {
+    const items = this.toArray()
+    const group = new this.constructor(this.type, this)
+    const spliced = items.splice(...args)
+
+    this.clear()
+    this.push(...items)
+    return coerce(group.concat(spliced))
+  }
+
+  /**
+   * Clear the items from the `Group` instance returning the number
+   * of items just cleared.
+   * @return {Number}
+   */
+  clear() {
+    const cleared = this.length
+    this.length = 0
+    return cleared
+  }
+
+  /**
    * Convert this instance into an `Array`.
    * @return {Array}
    */
@@ -299,12 +484,36 @@ class Group extends Array {
    * @return {Buffer}
    */
   toBuffer() {
-    const { chunks } = this
-    const type = this.type.toBuffer()
-    const size = Buffer.alloc(4)
-    const id = this.id.toBuffer()
-    size.writeUIntBE(type.length + chunks.length, 0 , 4)
-    return Buffer.concat([ id, size, type, chunks ])
+    const { chunks, header } = this
+    return Buffer.concat([ header, chunks ])
+  }
+
+  /**
+   * Returns a `Generator` for iteration over the `Group` instance.
+   * @return {Generator}
+   */
+  *iterator() {
+    for (const chunk of this) {
+      yield chunk
+    }
+
+    return null
+  }
+
+  /**
+   * Creates and returns `ReadStream` for this `Group` instance.
+   * @return {ReadStream}
+   */
+  createReadStream() {
+    return new ReadStream(this)
+  }
+
+  /**
+   * Creates and returns `WriteStream` for this `Group` instance.
+   * @return {WriteStream}
+   */
+  createWriteStream() {
+    return new WriteStream(this)
   }
 }
 
@@ -313,5 +522,7 @@ class Group extends Array {
  */
 module.exports = {
   Group,
-  extensions
+  extensions,
+  ReadStream,
+  WriteStream,
 }

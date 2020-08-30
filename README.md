@@ -16,21 +16,13 @@ Interchange File
 Format)](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/AIFF/Docs/AIFF-1.3.pdf)
 
 ```js
-const { Form, Chunk } = require('interchange-file-format')
+const { Form, Chunk, extensions } = require('interchange-file-format')
+const fs = require('fs'
 
-Form.extensions.set('COMM', class CommonChunk extends Chunk {
-  get numChannels() {
-    return this.readUIntBE(0, 2)
-  }
-
-  get numSampleFrames() {
-    return this.readUIntBE(2, 4)
-  }
-
-  get sampleSize() {
-    return this.readUIntBE(6, 2)
-  }
-
+extensions.set('COMM', class CommonChunk extends Chunk {
+  get numChannels() { return this.readUIntBE(0, 2) }
+  get numSampleFrames() { return this.readUIntBE(2, 4) }
+  get sampleSize() { return this.readUIntBE(6, 2) }
   get sampleRate() {
     const x = this.readUIntBE(8, 2)
     const y = this.readUIntBE(10, 1)
@@ -42,36 +34,22 @@ Form.extensions.set('COMM', class CommonChunk extends Chunk {
   }
 })
 
-Form.extensions.set('SSND', class SoundDataChunk extends Chunk {
-  get offset() {
-    return this.readUIntBE(0, 4)
-  }
-
-  get blockSize() {
-    return this.readUIntBE(4, 4)
-  }
-
-  get soundData() {
-    return this.slice(8)
-  }
+extensions.set('SSND', class SoundDataChunk extends Chunk {
+  get offset() { return this.readUIntBE(0, 4) }
+  get blockSize() { return this.readUIntBE(4, 4) }
+  get soundData() { return this.slice(8) }
 })
 
-const buffer = fs.readFileSync('/path/to/audio/track.aif')
-const form = Form.from(buf)
-console.log(form.type.toString()); // AIFC
+const stream = fs.createReadStream('/path/to/audio/track.aif')
+const form = new Form({ type: 'AIIF' })
 
-for (const chunk of form) {
-  if ('COMM' ===  chunk.id.toString()) {
-    // chunk is an instance of `CommonChunk`
-    console.log(chunk.numChannels, chunk.numSampleFrames, chunk.sampleSize, chunk.sampleRate);
+stream.pipe(form.createWriteStream()).on('finish', () => {
+  for (const chunk of form) {
+    // `chunk` could be `CommonChunk` or `SoundDataChunk` when `COMM`
+    // and `SSND` chunk IDs are foud
+    console.log(chunk)
   }
-}
-
-  if ('SSND' === chunk.id.toString()) {
-    // chunk is an instance of `SoundDataChunk`
-    console.log(chunk.offset, chunk.blockSize, chunk.soundData);
-  }
-}
+})
 ```
 
 ## API
@@ -296,6 +274,14 @@ Convert this instance into an `Array`.
 
 Creates a buffer from this `Group` instance flattening all
 chunks in the hierarchy.
+
+##### `stream = group.createReadStream()`
+
+Get a `ReadStream` for chunks in a `Group` instance.
+
+##### `stream = group.createWriteStream()`
+
+Get a `WriteStream` for writing chunks in a `Group` instance.
 
 ### Form
 

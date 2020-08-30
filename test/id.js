@@ -28,26 +28,36 @@ test('ID.from()', (t) => {
     const id = ID.from('FORM')
     t.equal(4, id.length, '4 byte length')
     t.equal('464f524d', id.toString('hex'), 'FORM as hex')
+    t.ok(id.isValid)
   }
 
   {
     const id = ID.from(parseInt(Buffer.from('FORM').toString('hex'), 16))
     t.equal(4, id.length, '4 byte length')
     t.equal('464f524d', id.toString('hex'), 'FORM as hex')
+    t.ok(id.isValid)
   }
 
   {
     const id = ID.from(0)
     t.equal(4, id.length, '4 byte length')
     t.equal('00000000', id.toString('hex'), '0 as hex')
+    t.notOk(id.isValid)
   }
 
   {
     const id = ID.from(null)
     t.equal(4, id.length, '4 byte length')
     t.equal('00000000', id.toString('hex'), '0 as hex')
+    t.notOk(id.isValid)
   }
 
+  t.end()
+})
+
+test('ID.EMPTY()', (t) => {
+  t.deepEqual(ID.EMPTY, ID.from('00000000'))
+  t.notOk(ID.EMPTY.isValid)
   t.end()
 })
 

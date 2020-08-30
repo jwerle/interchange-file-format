@@ -21,10 +21,13 @@ test('new Chunk()', (t) => {
   {
     const ancestor = new Chunk('LIST', { size: 32 })
     const chunk = Chunk.from(new Chunk('FORM', { ancestor, size: 16 }))
+    const other = Chunk.from(chunk.toBuffer(), { ancestor })
 
     t.equal('FORM', chunk.id.toString())
     t.equal(16, chunk.length)
     t.equal(ancestor, chunk.ancestor)
+    t.equal(ancestor, other.ancestor)
+    t.deepEqual(chunk, other)
   }
 
   t.end()
@@ -44,7 +47,15 @@ test('Chunk.from()', (t) => {
   t.equal('HELLO!', chunk.toString())
   t.deepEqual(chunk, Chunk.from(chunk.toBuffer()))
   t.end()
-  })
+})
+
+test('Chunk.header()', (t) => {
+  const chunk = Chunk.from(Buffer.from('ping'), { size: 8 })
+  const header = Chunk.header(chunk.toBuffer())
+  t.equal('ping', header.id.toString())
+  t.equal(8, header.size)
+  t.end()
+})
 
 test('chunk.map()', (t) => {
   const chunk = new Chunk('TEST', { size: 8 })

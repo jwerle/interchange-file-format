@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "nanoassert": "^2.0.0",
+    "streamx": "^2.6.6",
     "varint": "^5.0.0"
   }
 }

@@ -93,6 +93,12 @@ test('Group.from()', (t) => {
   t.deepEqual(form.shift(), author)
   t.deepEqual(form.pop(), name)
 
+  form.append([ name, author ])
+  t.deepEqual([ name, author ], form.toArray())
+  t.deepEqual([ name ], form.splice(0, 1).toArray())
+  t.deepEqual([ author ], form.splice(0, 1).toArray())
+  t.deepEqual([ ], form.toArray())
+
   t.end()
 })
 
@@ -109,7 +115,59 @@ test('new Group()', (t) => {
   pong.set('world')
 
   t.equal(1, form.push(ping))
+  t.equal(ping.size, form.size)
   t.equal(2, form.push(pong))
+  t.equal(ping.size + pong.size, form.size)
 
   t.end()
+})
+
+test('ReadStream', (t) => {
+  const form = new Group('FORM', { type: 'TEST' })
+
+  t.equal('FORM', form.id.toString())
+  t.equal('TEST', form.type.toString())
+
+  const ping = Chunk.from('ping', { size: 5 })
+  const pong = Chunk.from('pong', { size: 5 })
+
+  ping.set('hello')
+  pong.set('world')
+
+  form.push(ping)
+  form.push(pong)
+
+  const chunks =  []
+  form.createReadStream()
+    .on('data', (chunk) => chunks.push(chunk))
+    .on('end', () => {
+      t.deepEqual(form, Group.from(Buffer.concat(chunks)))
+      t.end()
+    })
+
+})
+
+test('WriteStream', (t) => {
+  const form = new Group('FORM', { type: 'TEST' })
+  const copy = new Group('FORM', { type: 'TEST' })
+
+  t.equal('FORM', form.id.toString())
+  t.equal('TEST', form.type.toString())
+
+  const ping = Chunk.from('ping', { size: 5 })
+  const pong = Chunk.from('pong', { size: 5 })
+
+  ping.set('hello')
+  pong.set('world')
+
+  form.push(ping)
+  form.push(pong)
+
+  const chunks =  []
+  form.createReadStream().pipe(copy.createWriteStream())
+    .on('finish', () => {
+      t.deepEqual(form, copy)
+      t.end()
+    })
+
 })
