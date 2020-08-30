@@ -12,6 +12,16 @@ const { ID } = require('./id')
 class List extends Group {
 
   /**
+   * 4 byte ID for this type.
+   * @static
+   * @accessor
+   * @type {ID}
+   */
+  static get ID() {
+    return ID.from('LIST')
+  }
+
+  /**
    * `List` class constructor
    */
   constructor(opts, optionsWhenAssumedGroup) {
@@ -19,7 +29,7 @@ class List extends Group {
       opts = optionsWhenAssumedGroup
     }
 
-    super('LIST', opts)
+    super(List.ID, opts)
   }
 
   /**

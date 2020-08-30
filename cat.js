@@ -1,4 +1,5 @@
 const { Group } = require('./group')
+const { ID } = require('./id')
 
 /**
  * A container for a concatenation.
@@ -8,6 +9,16 @@ const { Group } = require('./group')
 class CAT extends Group {
 
   /**
+   * 4 byte ID for this type.
+   * @static
+   * @accessor
+   * @type {ID}
+   */
+  static get ID() {
+    return ID.from('CAT ')
+  }
+
+  /**
    * `CAT` class constructor
    */
   constructor(opts, optionsWhenAssumedGroup) {
@@ -15,21 +26,8 @@ class CAT extends Group {
       opts = optionsWhenAssumedGroup
     }
 
-    super('CAT', opts)
-  }
-
-  /**
-   * Append a `Group` or an array of Groups to the `CAT` instance.
-   * @param {Buffer} buffer
-   */
-  append(chunk) {
-    if (Array.isArray(chunk) && !chunk.toBuffer) {
-      for (const ch of chunk) {
-        this.append(ch)
-      }
-    } else if (chunk.append) {
-      this.push(chunk)
-    }
+    super(CAT.ID, opts)
+    this.onlyGroups = true
   }
 }
 

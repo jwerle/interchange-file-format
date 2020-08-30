@@ -1,4 +1,5 @@
 const { Group } = require('./group')
+const { ID } = require('./id')
 
 /**
  * A container for a form (FORM).
@@ -8,6 +9,16 @@ const { Group } = require('./group')
 class Form extends Group {
 
   /**
+   * 4 byte ID for this type.
+   * @static
+   * @accessor
+   * @type {ID}
+   */
+  static get ID() {
+    return ID.from('FORM')
+  }
+
+  /**
    * `Form` class constructor
    */
   constructor(opts, optionsWhenAssumedGroup) {
@@ -15,7 +26,7 @@ class Form extends Group {
       opts = optionsWhenAssumedGroup
     }
 
-    super('FORM', opts)
+    super(Form.ID, opts)
   }
 }
 

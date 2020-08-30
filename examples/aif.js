@@ -4,15 +4,15 @@ const fs = require('fs')
 
 Form.extensions.set('COMM', class CommonChunk extends Chunk {
   get numChannels() {
-    return this.readUIntBE(0, 2)
+    return this.readInt16BE(0, 2)
   }
 
   get numSampleFrames() {
-    return this.readUIntBE(2, 4)
+    return this.readInt32BE(2, 4)
   }
 
   get sampleSize() {
-    return this.readUIntBE(6, 2)
+    return this.readInt16BE(6, 2)
   }
 
   get sampleRate() {

@@ -47,7 +47,7 @@ class Chunk extends Uint8Array {
   constructor(id, opts) {
     assert(id, 'Expecting `id` to be something. Got: ' + typeof id)
     assert(opts && 'object' === typeof opts, 'Expecting `options` to be an object')
-    assert(opts.size > 0, 'Expecting `options.size > 0`')
+    assert(opts.size >= 0, 'Expecting `options.size > 0`')
 
     const { ancestor = null } = opts
     const { size } = opts
@@ -57,6 +57,7 @@ class Chunk extends Uint8Array {
 
     Object.defineProperties(this, {
       ancestor: { value: ancestor , enumerable: false, writable: true },
+      size: { value: size, enumerable: false, writable: true },
       id: { value: ID.from(id), enumerable: false },
     })
   }
@@ -67,7 +68,7 @@ class Chunk extends Uint8Array {
    * @type {Buffer}
    */
   get data() {
-    return this.slice()
+    return Buffer.from(this.buffer)
   }
 
   /**
@@ -84,14 +85,66 @@ class Chunk extends Uint8Array {
   }
 
   /**
+   * Map over the chunks in this chunk returning a new `Chunk` instance.
+   * @return {Chunk}
+   */
+  map(...args) {
+    const mapped = Buffer.from(this.toArray().map(...args))
+    const chunk = new this.constructor(this.id, {
+      ancestor: this,
+      size: mapped.length,
+    })
+    chunk.set(mapped)
+    return chunk
+  }
+
+  /**
+   * Filter over the chunks in this chunk returning a new `Chunk` instance.
+   * @return {Chunk}
+   */
+  filter(...args) {
+    const filtered = Buffer.from(this.toArray().filter(...args))
+    const chunk = new this.constructor(this.id, {
+      ancestor: this,
+      size: filtered.length,
+    })
+    chunk.set(filtered)
+    return chunk
+  }
+
+  /**
+   * Creates a new `Chunk` instance as a slice from this instance.
+   * @return {Chunk}
+   */
+  slice(...args) {
+    const sliced = Buffer.from(this.toArray().slice(...args))
+    const chunk = new this.constructor(this.id, {
+      ancestor: this,
+      size: sliced.length,
+    })
+    chunk.set(sliced)
+    return chunk
+  }
+
+  /**
+   * Convert this instance into an `Array`.
+   * @return {Array}
+   */
+  toArray() {
+    return Array.from(this)
+  }
+
+  /**
    * Converts the `Chunk` to a `Buffer`, including the ID and size bytes.
    * @return {Buffer}
    */
   toBuffer() {
     const { data } = this
     const size = Buffer.alloc(4)
+    // istanbul ignore next
+    const pad = this.length % 2 && 0 == data[data.length - 1] ? -1 : 0
     const id = this.id.toBuffer()
-    size.writeUIntBE(this.length, 0, 4)
+    size.writeUIntBE(this.length + pad, 0, 4)
     return Buffer.concat([ id, size, data ])
   }
 }
@@ -119,12 +172,14 @@ class ChunkIterator {
 
   /**
    * `ChunkIterator` class constructor.
+   * @private
    * @param {Buffer} buffer
    * @param {?(Number)} offset
    */
+  // istanbul-ignore-next
   constructor(buffer, offset) {
     this.buffer = buffer
-    this.offset = 0
+    this.offset = offset || 0
   }
 
   /**

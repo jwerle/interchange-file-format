@@ -23,6 +23,8 @@ test('new List()', (t) => {
     t.deepEqual(form, Form.from(form.toBuffer()))
     t.deepEqual(prop, Prop.from(prop.toBuffer()))
     t.deepEqual(list, List.from(list.toBuffer()))
+
+    t.deepEqual([ prop ], list.props)
   }
 
   t.end()

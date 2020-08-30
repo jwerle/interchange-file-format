@@ -1,4 +1,5 @@
 const { Group } = require('./group')
+const { ID } = require('./id')
 
 /**
  * A container for a properties (PROP).
@@ -8,6 +9,16 @@ const { Group } = require('./group')
 class Prop extends Group {
 
   /**
+   * 4 byte ID for this type.
+   * @static
+   * @accessor
+   * @type {ID}
+   */
+  static get ID() {
+    return ID.from('PROP')
+  }
+
+  /**
    * `Prop` class constructor
    */
   constructor(opts, optionsWhenAssumedGroup) {
@@ -15,10 +26,13 @@ class Prop extends Group {
       opts = optionsWhenAssumedGroup
     }
 
-    super('PROP', opts)
+    super(Prop.ID, opts)
   }
 }
 
+/**
+ * Module exports.
+ */
 module.exports = {
   Prop
 }
