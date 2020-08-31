@@ -175,12 +175,35 @@ class ID extends Uint8Array {
   }
 
   /**
+   * Compare a buffer, string, ID, or array of bytes with the
+   * `ID` instances bytes.
+   * @param {String|ID|Buffer|Array} target
+   */
+  compare(target, ...args) {
+    if ('string' === typeof target) {
+      target = Buffer.from(target)
+    } else if (Array.isArray(target)) {
+      target = Buffer.from(target)
+    }
+
+    return super.compare(target, ...args)
+  }
+
+  /**
    * Convert `ID` instance directly to `Buffer`, using the same internal
    * `ArrayBuffer` for this instance.
    * @return {Buffer}
    */
   toBuffer() {
     return Buffer.from(this.buffer) // `this.buffer` is the `ArrayBuffer`
+  }
+
+  /**
+   * Convert `ID` instance to an `Array`.
+   * @return {Array}
+   */
+  toArray() {
+    return Array.from(this.toBuffer())
   }
 }
 

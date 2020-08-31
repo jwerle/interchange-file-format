@@ -13,6 +13,12 @@ test('new ID()', (t) => {
   const id = new ID()
   t.equal(4, id.length, '4 byte length')
   t.equal('00000000', id.toString('hex'), 'initial null bytes')
+  const ping = ID.from('ping')
+  const ping2 = ID.from('ping')
+  t.ok(0 === ping.compare('ping'))
+  t.ok(0 !== ping.compare('pong'))
+  t.ok(0 === ping.compare(ping2))
+  t.ok(0 === ping.compare(ping2.toArray()))
   t.end()
 })
 
