@@ -255,10 +255,15 @@ class Group extends Array {
   /**
    * `Group` class constructor.
    * @param {String|ID|Buffer} id
-   * @param {Object} opts
+   * @param {?(Object)} opts
    */
   constructor(id, opts) {
-    assert(opts && 'object' === typeof opts, 'Expecting `options` to be an object')
+    // istanbul ignore next
+    if (!opts) {
+      opts = {}
+    }
+
+    assert('object' === typeof opts, 'Expecting `options` to be an object')
 
     super()
 
