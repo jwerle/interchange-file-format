@@ -41,7 +41,7 @@ extensions.set('SSND', class SoundDataChunk extends Chunk {
 })
 
 const stream = fs.createReadStream('/path/to/audio/track.aif')
-const form = new Form({ type: 'AIIF' })
+const form = new Form({ type: 'AIFF' })
 
 stream.pipe(form.createWriteStream()).on('finish', () => {
   for (const chunk of form) {
