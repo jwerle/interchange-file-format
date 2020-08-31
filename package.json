@@ -1,6 +1,6 @@
 {
   "name": "interchange-file-format",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Interchange File Format (IFF) codec.",
   "main": "index.js",
   "scripts": {
