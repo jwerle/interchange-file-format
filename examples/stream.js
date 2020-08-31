@@ -1,7 +1,7 @@
 const { Form } = require('../')
 const fs = require('fs')
 
-const form = new Form({ type: 'AIIF' })
+const form = new Form({ type: 'AIFF' })
 const reader = fs.createReadStream(process.argv[2])
 const writer = form.createWriteStream()
 
