@@ -1,20 +1,8 @@
+const extensions = require('../extensions')
 const { Group } = require('../group')
 const { Chunk } = require('../chunk')
+const builtins = require('../builtins')
 const test = require('tape')
-
-test('Group.extensions', (t) => {
-  t.ok(Group.extensions instanceof Map)
-  t.end()
-})
-
-test('Group.builtins', (t) => {
-  t.ok(Group.builtins instanceof Map)
-  t.ok('function' === typeof Group.builtins.get('CAT'))
-  t.ok('function' === typeof Group.builtins.get('FORM'))
-  t.ok('function' === typeof Group.builtins.get('LIST'))
-  t.ok('function' === typeof Group.builtins.get('PROP'))
-  t.end()
-})
 
 test('Group.from()', (t) => {
   class TextChunk extends Chunk {
@@ -26,13 +14,13 @@ test('Group.from()', (t) => {
   class PingChunk extends Chunk { }
   class PongChunk extends Chunk { }
 
-  Group.extensions.set('NAME', TextChunk)
-  Group.extensions.set('AUTH', TextChunk)
-  Group.extensions.set('PING', PingChunk)
-  Group.extensions.set('PONG', PongChunk)
+  extensions.set('NAME', TextChunk)
+  extensions.set('AUTH', TextChunk)
+  extensions.set('PING', PingChunk)
+  extensions.set('PONG', PongChunk)
 
-  const CAT = Group.builtins.get('CAT')
-  const FORM = Group.builtins.get('FORM')
+  const CAT = builtins.get('CAT')
+  const FORM = builtins.get('FORM')
 
   const group = new Group('FORM', { type: 'TEST' })
   const ping = Chunk.from('PING', { size: 8 })
@@ -144,7 +132,6 @@ test('ReadStream', (t) => {
       t.deepEqual(form, Group.from(Buffer.concat(chunks)))
       t.end()
     })
-
 })
 
 test('WriteStream', (t) => {
@@ -169,5 +156,4 @@ test('WriteStream', (t) => {
       t.deepEqual(form, copy)
       t.end()
     })
-
 })

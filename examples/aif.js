@@ -1,8 +1,9 @@
+const extensions = require('../extensions')
 const { Chunk } = require('../chunk')
 const { Form } = require('../form')
 const fs = require('fs')
 
-Form.extensions.set('COMM', class CommonChunk extends Chunk {
+extensions.set('COMM', class CommonChunk extends Chunk {
   get numChannels() {
     return this.readInt16BE(0, 2)
   }
@@ -26,7 +27,7 @@ Form.extensions.set('COMM', class CommonChunk extends Chunk {
   }
 })
 
-Form.extensions.set('SSND', class SoundDataChunk extends Chunk {
+extensions.set('SSND', class SoundDataChunk extends Chunk {
   get offset() {
     return this.readUIntBE(0, 4)
   }

@@ -176,25 +176,6 @@ An abstract class that extends `Array` that behaves like a container that
 for many things. Classes like `Form` and `List` extend this type for the
 `FORM` and `LIST` chunk types, respectively.
 
-#### `Group.extensions`
-
-A static `Map` of `Group` extensions that map a 4 byte chunk `ID` string
-to a class that extends `Group` (or `Chunk`) to handle extensions to the
-`EA IFF 85` spec, such as `AIFF` with the `NAME` or `SSND` types.
-
-```js
-const { Chunk, Group } = require('interchange-file-format')
-class TextChunk extends Chunk {
-  get text() {
-    return this.slice(0, this.size).toString()
-  }
-}
-
-// when then `NAME` or `AUTH` chunk ID is seen in a `Group`, this class will be used
-Group.extensions.set('NAME', TextChunk)
-Group.extensions.set('AUTH', TextChunk)
-```
-
 #### `group = new Group(id, options)`
 
 Creates a new `Group` from a given `ID` with `options` where `option`
@@ -295,6 +276,25 @@ A `Group` type with an `ID` set to `LIST`.
 
 A special `Group` type with an `ID` set to `LIST` with a restriction on
 the types of descendants being only other `Group` types.
+
+### `extensions`
+
+A static `Map` of `Group` extensions that map a 4 byte chunk `ID` string
+to a class that extends `Group` or `Chunk` to handle extensions to the
+`EA IFF 85` spec, such as `AIFF` (or `AIFC`) with the `NAME` or `SSND` types.
+
+```js
+const { Chunk, Group, extensions } = require('interchange-file-format')
+class TextChunk extends Chunk {
+  get text() {
+    return this.slice(0, this.size).toString()
+  }
+}
+
+// when then `NAME` or `AUTH` chunk ID is seen in a `Group`, this class will be used
+extensions.set('NAME', TextChunk)
+extensions.set('AUTH', TextChunk)
+```
 
 ## License
 

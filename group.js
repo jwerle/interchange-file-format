@@ -1,5 +1,7 @@
 const { Chunk, ChunkIterator } = require('./chunk')
 const { Readable, Writable } = require('streamx')
+const extensions = require('./extensions')
+const builtins = require('./builtins')
 const { ID } = require('./id')
 const assert = require('nanoassert')
 
@@ -7,30 +9,6 @@ const assert = require('nanoassert')
  * `Group` instances will have this symbol defined
  */
 const kIsGroup = Symbol('GroupType')
-
-/**
- * A public mapping of extensions to ID strings.
- * @public
- */
-const extensions = new Map()
-
-/**
- * A public mapping of built in types to ID strings.
- * @public
- */
-const builtins = Object.assign(new Map(), {
-  load() {
-    if (false === builtins.has('FORM')) {
-      // lazy load built ins
-      builtins.set('CAT', require('./cat').CAT)
-      builtins.set('FORM', require('./form').Form)
-      builtins.set('LIST', require('./list').List)
-      builtins.set('PROP', require('./prop').Prop)
-    }
-
-    return builtins
-  }
-})
 
 /**
  * Coerce a `Chunk` into a builtin or extension, if supported
@@ -44,8 +22,8 @@ function coerce(chunk) {
   }
 
   const id = chunk.id.toString()
-  const builtin = Group.builtins.get(id) || Group.builtins.get(id.trim())
-  const extension = Group.extensions.get(id) || Group.extensions.get(id.trim())
+  const builtin = builtins.get(id) || builtins.get(id.trim())
+  const extension = extensions.get(id) || extensions.get(id.trim())
 
   if ('function' === typeof builtin && 'function' === typeof builtin.from) {
     if (chunk instanceof builtin) {
@@ -206,27 +184,6 @@ class WriteStream extends Writable {
  * @extends Array
  */
 class Group extends Array {
-
-  /**
-   * Returns a pointer to an extension map
-   * @static
-   * @accessor
-   * @type {Map}
-   */
-  static get extensions() {
-    return extensions
-  }
-
-  /**
-   * Returns a pointer to an extension map
-   * @static
-   * @accessor
-   * @type {Map}
-   */
-  static get builtins() {
-    // load builtins after exports
-    return builtins.load()
-  }
 
   /**
    * Creates a new `Group` instance from a given buffer, loading types
@@ -527,7 +484,6 @@ class Group extends Array {
  */
 module.exports = {
   Group,
-  extensions,
   ReadStream,
   WriteStream,
 }
