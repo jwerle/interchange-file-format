@@ -24,5 +24,17 @@
     "nanoassert": "^2.0.0",
     "streamx": "^2.6.6",
     "varint": "^5.0.0"
-  }
+  },
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwerle/interchange-file-format.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jwerle/interchange-file-format/issues"
+  },
+  "homepage": "https://github.com/jwerle/interchange-file-format#readme"
 }
