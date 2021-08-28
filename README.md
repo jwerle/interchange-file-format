@@ -17,7 +17,7 @@ Format)](http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/AIFF/Docs/AIFF-1.3
 
 ```js
 const { Form, Chunk, extensions } = require('interchange-file-format')
-const fs = require('fs'
+const fs = require('fs')
 
 extensions.set('COMM', class CommonChunk extends Chunk {
   get numChannels() { return this.readUIntBE(0, 2) }
