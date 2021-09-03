@@ -189,7 +189,7 @@ can be:
 ```
 
 ```js
-const form = new Group('FORM', { type: 'TEST' })
+const group = new Group('FORM', { type: 'TEST' })
 ```
 
 #### `group = Group.from(buffer)`
